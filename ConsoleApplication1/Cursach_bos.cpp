@@ -11,13 +11,10 @@
 #pragma comment (lib,"Ws2_32.lib")
 
 
-
 #define MAX_PACKET_SIZE    0x10000
 #define SIO_RCVALL         0x98000001
 // Буфер для приёма данных
 char Buffer[MAX_PACKET_SIZE]; // 64 Kb
-
-using namespace std;
 
 //Структура заголовка IP-пакета
 
@@ -44,21 +41,65 @@ unsigned short lowbyte;
 unsigned short hibyte;
 using namespace std;
 
-int main()
+int main(int argc, char* argv[])
 {
+	if (argc == 2)
+	{
+		if (argv[1] == string("/?"))
+		{
+			cout << "Creator: Danila Urvantsev BI-41\nAvailable options: /?\nIP addres of adapter. Example 192.168.1.1. You could find it by ipconfig\n";
+			return 0;
+		}
+	}
+	else
+	{
+		cout << "Bad arguments\nAvailable options: /?\nIP addres of adapter. Example 192.168.1.1. You could find it by ipconfig\n";
+		return 0;
+	}
+
 	//1.Инициализация Winsock
 	WSADATA     wsadata;	// Cодержит информацию о проинициализированной версии WinsocAPI
+	int			error = 1;	// Код ошибки
 	SOCKET      s;			// Cлущающий сокет.
 	char        name[128];	// Имя хоста (компьютера).
 	HOSTENT*	phe;		// Информация о хосте.
+	/*struct hostent
+	{
+		char FAR* h_name;				// имя хоста
+		char FAR* FAR* h_aliases;		// дополнительные названия
+		short h_addrtype;				// тип адреса
+		short h_length;					// длинна каждого адреса в байтах
+		char FAR* FAR* h_addr_list;		// список адресов хоста
+	};*/
+
 	SOCKADDR_IN sa;			// Адрес хоста
+	/*typedef struct sockaddr_in {
+	short          sin_family;
+	u_short        sin_port;
+	struct in_addr sin_addr;
+	char           sin_zero[8];
+	} SOCKADDR_IN, *PSOCKADDR_IN, *LPSOCKADDR_IN;*/
+
 	IN_ADDR		sa1;		// Информация о подключении
+	/*Структура in_addr представляет собой адрес интернета.
+
+	struct in_addr {
+		union {
+			struct { u_char s_b1,s_b2,s_b3,s_b4; } S_un_b; адрес в формате как четыре u_chars.
+			struct { u_short s_w1,s_w2; } S_un_w; адрес в формате как два u_shorts.
+			u_long S_addr; адрес в формате u_long.
+		} S_un;
+	};
+
+	Как обращаться к этим данным ?? Вот, например, как можно заполнить эту стуктуру:
+
+	in_addr adr2;
+	adr2.s_addr=inet_addr("124.23.45.67");*/
+
 	unsigned long flag = 1;	// Флаг PROMISC Вкл/выкл.
-	int			error = 1;	// Код ошибки
 
 	//MAKEWORD( 2, 2 ) - связывает версию. Версия 2.2
 	//WSAStartup() функция которая инициализирует Winsock
-
 	if (FAILED(WSAStartup(MAKEWORD(2, 2), &wsadata)))
 	{
 		// Error...
@@ -67,8 +108,8 @@ int main()
 		exit(1);
 	}
 
-
 	//2.Создание сокета
+
 	//AF_INET- (address family) протокол семейства интернет
 	//SOCK_STREAM (надёжная потокоориентированная служба (сервис) или потоковый сокет для tcp)
 	//SOCK_DGRAM (служба датаграмм или датаграммный сокет)
@@ -76,7 +117,6 @@ int main()
 	//IPPROTO_IP
 	//IPPROTO_UDP-udp протокол
 	//IPPROTO_TCP-тсp протокол
-
 	if (INVALID_SOCKET == (s = socket(AF_INET, SOCK_RAW, IPPROTO_IP)))//создаем дескриптор сокета
 	{
 		error = WSAGetLastError();
@@ -84,20 +124,25 @@ int main()
 		exit(1);
 	}
 	
+	// gethostname - получить имя хоста
 	gethostname(name, sizeof(name));
 	cout << "Hostname: " << name << endl;
+	cout << "Address (adapter): " << argv[1] << endl;
+
+	// gethostbyname - получить хост по имени 
 	phe = gethostbyname(name);
+
+	// ZeroMemory предназначена для обнуления памяти
 	ZeroMemory(&sa, sizeof(sa));
 	sa.sin_family = AF_INET;
-	for (int i = 0; i < 5; i++)
-		cout << i << " " << ((struct in_addr*)phe->h_addr_list[i]) << endl;
-	sa.sin_addr.s_addr = ((struct in_addr*)phe->h_addr_list[1])->s_addr;
-
+	//for (int i = 0; i < 5; i++)
+	//	cout << i << " " << ((struct in_addr*)phe->h_addr_list[i]) << endl;
+	//sa.sin_addr.s_addr = ((struct in_addr*)phe->h_addr_list[1])->s_addr;
+	sa.sin_addr.s_addr = inet_addr(argv[1]);
 	// bind устанавливает соединение сокета с адресом и принимает 3 параметра: 
 	// sockfd (s) — дескриптор, представляющий сокет при привязке
 	// serv_addr (sa) — указатель на структуру sockaddr, представляющую адрес, к которому привязываем.
 	// addrlen — поле socklen_t, представляющее длину структуры sockaddr.
-	//
 	bind(s, (SOCKADDR*)&sa, sizeof(SOCKADDR));
 
 	// Включение promiscuous mode. Код управления SIO_RCVALL позволяет сокету принимать все пакеты IPv4 или IPv6, проходящие через сетевой интерфейс.
@@ -112,7 +157,7 @@ int main()
 		if (count >= sizeof(IPHeader))
 		{
 			IPHeader* hdr = (IPHeader*)Buffer;
-			//Начинаем разбор пакета...
+			//Начинаем разбор пакета
 
 			strcpy(src, "Пакет: ");
 			CharToOem(src, dest);
