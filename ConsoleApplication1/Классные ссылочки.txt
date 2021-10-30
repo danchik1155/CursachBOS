@@ -1,0 +1,19 @@
+﻿http://netcode.ru/cpp/?lang=&katID=19&skatID=171&artID=5054 (можно менять последнюю цифру по одному - будут разные другие странички)
+https://docs.microsoft.com/en-us/windows/win32/winsock/sio-rcvall
+https://club.shelek.ru/viewart.php?id=35
+https://club.shelek.ru/viewart.php?id=37
+https://cpp.hotexamples.com/ru/examples/-/-/gethostbyaddr/cpp-gethostbyaddr-function-examples.html
+https://www.cyberforum.ru/cpp-cli/thread346601.html
+
+Супер пример 1
+http://kselax.ru/winsock2-podklyuchenie-i-ispolzovanie/
+
+Супер пример 2
+https://habr.com/ru/post/164901/
+
+Супер пример 3
+https://programmersforum.ru/showthread.php?t=93135
+
+ОТ УРФУ
+https://lecturesnet.readthedocs.io/net/low-level/ipc/socket/intro.html#bind
+

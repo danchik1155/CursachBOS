@@ -10,7 +10,6 @@
 #include <winsock2.h>
 #pragma comment (lib,"Ws2_32.lib")
 
-
 #define MAX_PACKET_SIZE    0x10000
 #define SIO_RCVALL         0x98000001
 // Буфер для приёма данных
