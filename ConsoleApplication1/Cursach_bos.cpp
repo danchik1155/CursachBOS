@@ -52,7 +52,7 @@ int main()
 	char        name[128];	// Имя хоста (компьютера).
 	HOSTENT*	phe;		// Информация о хосте.
 	SOCKADDR_IN sa;			// Адрес хоста
-	IN_ADDR		sa1;		//
+	IN_ADDR		sa1;		// Информация о подключении
 	unsigned long flag = 1;	// Флаг PROMISC Вкл/выкл.
 	int			error = 1;	// Код ошибки
 
@@ -69,9 +69,12 @@ int main()
 
 
 	//2.Создание сокета
-	//PF_INET-протокол семейства интернет
-	//SOCK_STREAM-надежный потоковый сокет для tcp
-	//SOCK_RAW - сокет для работы с сырыми данными
+	//AF_INET- (address family) протокол семейства интернет
+	//SOCK_STREAM (надёжная потокоориентированная служба (сервис) или потоковый сокет для tcp)
+	//SOCK_DGRAM (служба датаграмм или датаграммный сокет)
+	//SOCK_RAW (cырой сокет) сырой протокол поверх сетевого уровня).
+	//IPPROTO_IP
+	//IPPROTO_UDP-udp протокол
 	//IPPROTO_TCP-тсp протокол
 
 	if (INVALID_SOCKET == (s = socket(AF_INET, SOCK_RAW, IPPROTO_IP)))//создаем дескриптор сокета
@@ -82,13 +85,22 @@ int main()
 	}
 	
 	gethostname(name, sizeof(name));
+	cout << "Hostname: " << name << endl;
 	phe = gethostbyname(name);
 	ZeroMemory(&sa, sizeof(sa));
 	sa.sin_family = AF_INET;
-	sa.sin_addr.s_addr = ((struct in_addr*)phe->h_addr_list[0])->s_addr;
+	for (int i = 0; i < 5; i++)
+		cout << i << " " << ((struct in_addr*)phe->h_addr_list[i]) << endl;
+	sa.sin_addr.s_addr = ((struct in_addr*)phe->h_addr_list[1])->s_addr;
+
+	// bind устанавливает соединение сокета с адресом и принимает 3 параметра: 
+	// sockfd (s) — дескриптор, представляющий сокет при привязке
+	// serv_addr (sa) — указатель на структуру sockaddr, представляющую адрес, к которому привязываем.
+	// addrlen — поле socklen_t, представляющее длину структуры sockaddr.
+	//
 	bind(s, (SOCKADDR*)&sa, sizeof(SOCKADDR));
 
-	// Включение promiscuous mode.
+	// Включение promiscuous mode. Код управления SIO_RCVALL позволяет сокету принимать все пакеты IPv4 или IPv6, проходящие через сетевой интерфейс.
 	ioctlsocket(s, SIO_RCVALL, &flag);
 
 	// Бесконечный цикл приёма IP-пакетов.
