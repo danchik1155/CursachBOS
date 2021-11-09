@@ -33,13 +33,17 @@ typedef struct IPHeader {
 	ULONG   iph_src;      // IP-адрес отправителя
 	ULONG   iph_dest;     // IP-адрес назначения
 	USHORT params;		// параметры (до 320 бит)
-	UCHAR data;			// данные (до 65535 октетов)
+	UCHAR data;			// данные (до 65535 соктетов)
 } IPHeader;
 
+
+// Переменные для работы с данными внутри пакета
+// Вывод пакета
 char src[10];
 char dest[10];
+// используется как буфер
 char ds[15];
-char dso[5];
+//char dso[5];
 unsigned short lowbyte;
 unsigned short hibyte;
 using namespace std;
@@ -133,7 +137,7 @@ int main(int argc, char* argv[])
 	cout << "Address (adapter): " << argv[1] << endl;
 
 	// gethostbyname - получить хост по имени 
-	phe = gethostbyname(name);
+	//phe = gethostbyname(name); использоватлось в первой версии программы
 
 	// ZeroMemory предназначена для обнуления памяти
 	ZeroMemory(&sa, sizeof(sa));
@@ -152,16 +156,18 @@ int main(int argc, char* argv[])
 	ioctlsocket(s, SIO_RCVALL, &flag);
 
 	// Бесконечный цикл приёма IP-пакетов.
+	int count;
 	while (true)
 	{
-		int count;
+		// recv - получает данные от сокета в буфер
 		count = recv(s, Buffer, sizeof(Buffer), 0);
-		// обработка IP-пакета
+		// обработка IP-пакета, если его размер удовлетворяет размеру структуры
 		if (count >= sizeof(IPHeader))
 		{
 			IPHeader* hdr = (IPHeader*)Buffer;
 			//Начинаем разбор пакета
 
+			// Для избежания проблем с локализацией
 			strcpy(src, "Пакет: ");
 			CharToOem(src, dest);
 			printf(dest);
