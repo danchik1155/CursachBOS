@@ -43,7 +43,7 @@ char src[10];
 char dest[10];
 // используется как буфер
 char ds[15];
-//char dso[5];
+
 unsigned short lowbyte;
 unsigned short hibyte;
 using namespace std;
@@ -96,12 +96,7 @@ int main(int argc, char* argv[])
 			struct { u_short s_w1,s_w2; } S_un_w; адрес в формате как два u_shorts.
 			u_long S_addr; адрес в формате u_long.
 		} S_un;
-	};
-
-	Как обращаться к этим данным ?? Вот, например, как можно заполнить эту стуктуру:
-
-	in_addr adr2;
-	adr2.s_addr=inet_addr("124.23.45.67");*/
+	};*/
 
 	unsigned long flag = 1;	// Флаг PROMISC Вкл/выкл.
 
@@ -136,15 +131,9 @@ int main(int argc, char* argv[])
 	cout << "Hostname: " << name << endl;
 	cout << "Address (adapter): " << argv[1] << endl;
 
-	// gethostbyname - получить хост по имени 
-	//phe = gethostbyname(name); использоватлось в первой версии программы
-
 	// ZeroMemory предназначена для обнуления памяти
 	ZeroMemory(&sa, sizeof(sa));
 	sa.sin_family = AF_INET;
-	//for (int i = 0; i < 5; i++)
-	//	cout << i << " " << ((struct in_addr*)phe->h_addr_list[i]) << endl;
-	//sa.sin_addr.s_addr = ((struct in_addr*)phe->h_addr_list[1])->s_addr;
 	sa.sin_addr.s_addr = inet_addr(argv[1]);
 	// bind устанавливает соединение сокета с адресом и принимает 3 параметра: 
 	// sockfd (s) — дескриптор, представляющий сокет при привязке
